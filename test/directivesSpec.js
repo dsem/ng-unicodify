@@ -1,6 +1,6 @@
 'use strict';
 
-describe('directive', function() {
+describe('directive: unicodify', function() {
 
     beforeEach(module('ng-unicodify'));
 
@@ -13,9 +13,11 @@ describe('directive', function() {
 
     }));
 
-    describe('unicodify', function() {
+    describe('simple character swapping', function() {
 
         it('should render Un with unicode chars', inject(function() {
+
+            var newHTML = element[0].innerHTML;
 
             expect([
                 '\u01d5',
@@ -23,8 +25,8 @@ describe('directive', function() {
                 '\u00da',
                 '\u00d9',
                 '\u00dc'
-            ]).toContain(element[0].innerHTML[0]);
-            
+            ]).toContain(newHTML[0]);
+
             expect([
                 '\u1d87',
                 '\u1d70',
@@ -57,8 +59,48 @@ describe('directive', function() {
                 '\u03ae',
                 '\u03b7',
                 '\u03c0'
-            ]).toContain(element[0].innerHTML[1]);
+            ]).toContain(newHTML[1]);
 
+        }));
+    });
+
+    describe('nested elements', function() {
+
+        beforeEach(inject(function($rootScope, $compile) {
+
+            element = angular.element('<span class="unicodify">U<span>U</span>U</span>');
+            $compile(element)($rootScope);
+
+        }));
+
+        it('should preserve child elements', inject(function() {
+
+            var newHTML = element[0].innerHTML;
+
+            expect(['\u01d5',
+                    '\u260b',
+                    '\u00da',
+                    '\u00d9',
+                    '\u00dc'
+                ]).toContain(newHTML[0]);
+
+            expect(newHTML.slice(1, 7)).toBe('<span>');
+
+            expect(['\u01d5',
+                    '\u260b',
+                    '\u00da',
+                    '\u00d9',
+                    '\u00dc'
+                ]).toContain(newHTML[7]);
+
+            expect(newHTML.slice(8, 15)).toBe('</span>');
+
+            expect(['\u01d5',
+                    '\u260b',
+                    '\u00da',
+                    '\u00d9',
+                    '\u00dc'
+                ]).toContain(newHTML[15]);
         }));
     });
 });
